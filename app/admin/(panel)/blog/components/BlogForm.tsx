@@ -21,6 +21,22 @@ export default function BlogForm({ initialData, onSubmit }: BlogFormProps) {
     meta_keyword: initialData?.meta_keyword || "",
   });
 
+  const [error, setError] = useState<Record<string, string>>({});
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!form.title) newErrors.title = "Title is required";
+    if (!form.slug) newErrors.slug = "Slug is required";
+    if (!form.author) newErrors.author = "Author is required";
+    if (!form.content) newErrors.content = "Content is required";
+    if (!form.excerpt) newErrors.excerpt = "Excerpt is required";
+
+    setError(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  }
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -29,6 +45,7 @@ export default function BlogForm({ initialData, onSubmit }: BlogFormProps) {
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+  if (!validate()) return;
   await onSubmit(form);
 };
 
@@ -45,6 +62,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         value={form.title}
         onChange={handleChange}
       />
+      {error.title && <p className="text-red-500 text-sm">{error.title}</p>}
 
       <input
         name="slug"
@@ -53,6 +71,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         value={form.slug}
         onChange={handleChange}
       />
+      {error.slug && <p className="text-red-500 text-sm">{error.slug}</p>}
 
       <input
         name="author"
@@ -61,6 +80,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         value={form.author}
         onChange={handleChange}
       />
+      {error.author && <p className="text-red-500 text-sm">{error.author}</p>}
 
       <input
         name="featured_image"
@@ -77,7 +97,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         value={form.excerpt}
         onChange={handleChange}
       />
-
+      {error.excerpt && <p className="text-red-500 text-sm">{error.excerpt}</p>}
       {/* 🔹 Content */}
       <h2 className="text-xl font-bold">Content</h2>
 
@@ -87,6 +107,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     setForm((prev) => ({ ...prev, content }))
   }
 />
+{error.title && <p className="text-red-500 text-sm">{error.title}</p>}  
 
       {/* 🔹 SEO Fields */}
       <h2 className="text-xl font-bold">SEO</h2>
