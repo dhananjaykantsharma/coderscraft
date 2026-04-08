@@ -1,6 +1,6 @@
 "use client";
 
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "@/lib/theme";
 import type { PropsWithChildren } from "react";
 
 export default function Providers({ children }: PropsWithChildren) {

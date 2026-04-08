@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function BlogPage() {
   const [blogs] = useState([
@@ -16,11 +17,16 @@ export default function BlogPage() {
     },
   ]);
 
+  const router = useRouter();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Blog Management</h1>
-        <button className="rounded-lg bg-black px-4 py-2 text-white hover:bg-gray-800">
+        <button 
+        className="rounded-lg bg-black px-4 py-2 text-white hover:bg-gray-800"
+        onClick={() => router.push("/admin/blog/add")}
+        >
           + Add Blog
         </button>
       </div>
