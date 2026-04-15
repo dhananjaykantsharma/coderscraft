@@ -3,11 +3,13 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  // ← Promise type
 ) {
   try {
+    const { id } = await params;  // ← await first
+
     const blog = await prisma.blog.findUnique({
-      where: { slug: params.id },
+      where: { slug: id },
       include: { details: true },
     });
 
@@ -23,9 +25,10 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  // ← Promise type
 ) {
   try {
+    const { id } = await params;  // ← await first
     const body = await req.json();
     const {
       title,
@@ -47,7 +50,7 @@ export async function PUT(
     }
 
     const updatedBlog = await prisma.blog.update({
-      where: { slug: params.id },
+      where: { slug: id },
       data: {
         title,
         slug,
@@ -56,18 +59,8 @@ export async function PUT(
         featured_image,
         details: {
           upsert: {
-            create: {
-              content,
-              meta_title,
-              meta_description,
-              meta_keyword,
-            },
-            update: {
-              content,
-              meta_title,
-              meta_description,
-              meta_keyword,
-            },
+            create: { content, meta_title, meta_description, meta_keyword },
+            update: { content, meta_title, meta_description, meta_keyword },
           },
         },
       },

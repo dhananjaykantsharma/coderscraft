@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import BlogEditor from "./BlogEditor";
 
 type BlogFormProps = {
@@ -15,13 +15,32 @@ export default function BlogForm({ initialData, onSubmit }: BlogFormProps) {
     excerpt: initialData?.excerpt || "",
     author: initialData?.author || "",
     featured_image: initialData?.featured_image || "",
-    content: initialData?.content || "",
-    meta_title: initialData?.meta_title || "",
-    meta_description: initialData?.meta_description || "",
-    meta_keyword: initialData?.meta_keyword || "",
+    content: initialData?.details.content || "",
+    meta_title: initialData?.details.meta_title || "",
+    meta_description: initialData?.details.meta_description || "",
+    meta_keyword: initialData?.details.meta_keyword || "",
   });
 
+  // add this below your useState
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        title: initialData.title || "",
+        slug: initialData.slug || "",
+        excerpt: initialData.excerpt || "",
+        author: initialData.author || "",
+        featured_image: initialData.featured_image || "",
+        content: initialData.details.content || "",
+        meta_title: initialData.details.meta_title || "",
+        meta_description: initialData.details.meta_description || "",
+        meta_keyword: initialData.details.meta_keyword || "",
+      });
+    }
+  }, [initialData]); // ← runs whenever initialData changes
+
   const [error, setError] = useState<Record<string, string>>({});
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>(initialData?.featured_image || "");
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -43,11 +62,68 @@ export default function BlogForm({ initialData, onSubmit }: BlogFormProps) {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!validate()) return;
-  await onSubmit(form);
-};
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+
+  }
+
+  const UploadImage = async (file: File): Promise<string> => {
+    console.log("UploadImage called with file:", file.name, "size:", file.size, "type:", file.type);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    console.log("Sending POST request to /api/upload");
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    console.log("Upload response status:", response.status);
+    const data = await response.json();
+    console.log("Upload response data:", data);
+
+    if (!response.ok) {
+      throw new Error(data.message || "Image upload failed");
+    }
+
+    return data.url;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    console.log("Starting blog submission...");
+    console.log("Image file selected:", imageFile);
+    console.log("Current featured_image in form:", form.featured_image);
+
+    let imageUrl = form.featured_image;
+    if (imageFile) {
+      console.log("Attempting to upload image...");
+      try {
+        imageUrl = await UploadImage(imageFile);
+        console.log("Image upload successful, URL:", imageUrl);
+      } catch (error) {
+        console.error("Image upload failed:", error);
+        alert("Image upload failed. Please try again.");
+        return;
+      }
+    } else {
+      console.log("No image file selected, using existing URL or empty");
+    }
+
+    const finalData = {
+      ...form,
+      featured_image: imageUrl,
+    };
+    console.log("Final data to submit:", finalData);
+
+    await onSubmit(finalData);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -85,10 +161,14 @@ const handleSubmit = async (e: React.FormEvent) => {
       <input
         name="featured_image"
         placeholder="Featured Image URL"
-        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        value={form.featured_image}
-        onChange={handleChange}
+        className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
       />
+      {imagePreview && (
+        <img src={imagePreview} alt="Preview" className="w-40 mt-2 rounded" />
+      )}
 
       <textarea
         name="excerpt"
@@ -102,12 +182,12 @@ const handleSubmit = async (e: React.FormEvent) => {
       <h2 className="text-xl font-bold">Content</h2>
 
       <BlogEditor
-  value={form.content}
-  onChange={(content) =>
-    setForm((prev) => ({ ...prev, content }))
-  }
-/>
-{error.title && <p className="text-red-500 text-sm">{error.title}</p>}  
+        value={form.content}
+        onChange={(content) =>
+          setForm((prev) => ({ ...prev, content }))
+        }
+      />
+      {error.title && <p className="text-red-500 text-sm">{error.title}</p>}
 
       {/* 🔹 SEO Fields */}
       <h2 className="text-xl font-bold">SEO</h2>

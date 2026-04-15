@@ -1,6 +1,8 @@
 "use client";
 
+import { toast } from "sonner";
 import BlogForm from "../components/BlogForm";
+import { useRouter } from "next/navigation";
 
 type Props = {
     title: string;
@@ -8,11 +10,25 @@ type Props = {
 };
 
 export default function AddBlogPage() {
+  const router = useRouter();
   const handleAdd = async (data: Props) => {
-    await fetch("/api/blog", {
+    const res = await fetch("/api/blog", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(data),
     });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      toast.error(errorData.message || "Failed to add blog");
+      return;
+    }
+    toast.success("Blog added successfully");
+    router.push("/admin/blog");
+
+
   };
 
   return (

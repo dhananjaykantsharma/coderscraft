@@ -1,21 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatDate } from "@/lib/utils/formatdate";
 
 export default function BlogPage() {
-  const [blogs] = useState([
-    {
-      id: 1,
-      title: "How to Grow Your Business",
-      date: "2026-03-30",
-    },
-    {
-      id: 2,
-      title: "Top 10 Coding Tips",
-      date: "2026-03-29",
-    },
-  ]);
+  const [blogs, setBlogs] = useState([]);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      const response = await fetch("/api/blog");
+      const data = await response.json();
+      console.log("Fetched blogs:", data);
+      if (response.ok) {
+        setBlogs(data);
+      } else {
+        console.error("Failed to fetch blogs:", data.error);
+      }
+    }
+    fetchBlogs();
+  }, [])
 
   const router = useRouter();
 
@@ -42,12 +46,15 @@ export default function BlogPage() {
           </thead>
 
           <tbody>
-            {blogs.map((blog) => (
+            {blogs.map((blog: any) => (
               <tr key={blog.id} className="border-t">
                 <td className="p-4 text-gray-900">{blog.title}</td>
-                <td className="p-4 text-gray-600">{blog.date}</td>
+                <td className="p-4 text-gray-600">{formatDate(blog.createdAt)}</td>
                 <td className="space-x-2 p-4">
-                  <button className="rounded-md bg-blue-500 px-3 py-1 text-sm text-white">
+                  <button 
+                  className="rounded-md bg-blue-500 px-3 py-1 text-sm text-white"
+                  onClick = {() => router.push(`/admin/blog/edit/${blog.slug}`)}
+                  >
                     Edit
                   </button>
                   <button className="rounded-md bg-red-500 px-3 py-1 text-sm text-white">
