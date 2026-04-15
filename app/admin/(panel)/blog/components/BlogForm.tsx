@@ -166,8 +166,8 @@ export default function BlogForm({ initialData, onSubmit }: BlogFormProps) {
         accept="image/*"
         onChange={handleImageChange}
       />
-      {imagePreview && (
-        <img src={imagePreview} alt="Preview" className="w-40 mt-2 rounded" />
+      {(imagePreview || form.featured_image) && (
+        <img src={imagePreview || form.featured_image} alt="Preview" className="w-40 mt-2 rounded" />
       )}
 
       <textarea
