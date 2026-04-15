@@ -78,3 +78,24 @@ export async function PUT(
     );
   }
 }
+
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try{
+    const { id } = await params;
+    console.log("Deleting blog with slug:", id);
+
+    const deletedBlog = await prisma.blog.delete({
+      where: { id: id },
+    })
+
+    console.log("Blog deleted successfully", deletedBlog);
+
+    return NextResponse.json({ message: "Blog deleted successfully" }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to delete blog" }, { status: 500 });
+  }
+}

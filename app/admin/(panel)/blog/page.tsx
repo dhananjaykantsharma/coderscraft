@@ -23,6 +23,23 @@ export default function BlogPage() {
 
   const router = useRouter();
 
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this blog?")) return;
+
+    const res = await fetch(`/api/blog/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      alert(errorData.error || "Failed to delete blog");
+      return;
+    }
+
+    alert("Blog deleted successfully");
+    setBlogs(blogs.filter((blog: any) => blog.id !== id));
+    
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -57,7 +74,10 @@ export default function BlogPage() {
                   >
                     Edit
                   </button>
-                  <button className="rounded-md bg-red-500 px-3 py-1 text-sm text-white">
+                  <button 
+                  className="rounded-md bg-red-500 px-3 py-1 text-sm text-white"
+                  onClick={() => handleDelete(blog.id)}
+                  >
                     Delete
                   </button>
                 </td>

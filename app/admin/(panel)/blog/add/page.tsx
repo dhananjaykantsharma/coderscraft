@@ -20,6 +20,8 @@ export default function AddBlogPage() {
       body: JSON.stringify(data),
     });
 
+    console.log("response of add", res);
+
     if (!res.ok) {
       const errorData = await res.json();
       toast.error(errorData.message || "Failed to add blog");

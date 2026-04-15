@@ -22,6 +22,7 @@ export default function BlogEditorClient({ value = "", onChange }: BlogEditorCli
       data={content}
       onChange={(_event, editor) => {
         const data = editor.getData();
+        if (data === content) return;
         setContent(data);
         onChange?.(data);
       }}
